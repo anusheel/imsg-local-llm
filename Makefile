@@ -1,5 +1,5 @@
 # imsg-local-llm: one-command pipeline. Everything runs locally.
-.PHONY: help setup extract prepare data quickstart train train-smoke chat base fuse stats clean wipe
+.PHONY: help setup extract prepare data quickstart train train-smoke train-fast train-fast-3b chat base fuse clean wipe
 
 SYS_PY := python3          # stdlib-only steps (extract/prepare/quickstart)
 PY     := .venv/bin/python # venv with mlx-lm (train/chat)
@@ -14,7 +14,9 @@ help:
 	@echo "  make data          extract + prepare"
 	@echo "  make quickstart    INSTANT clone via Ollama (no training)"
 	@echo "  make train         LoRA fine-tune Llama-3.1-8B on your texts (MLX)"
-	@echo "  make train-smoke   ~2 min end-to-end sanity fine-tune"
+	@echo "  make train-smoke   short end-to-end sanity fine-tune"
+	@echo "  make train-fast    faster LoRA: grad-checkpoint off, batch 4, seq 1024, 400 iters"
+	@echo "  make train-fast-3b same settings on a 3B base (fastest)"
 	@echo "  make chat          chat with your fine-tuned clone"
 	@echo "  make base          chat with the base model (no adapter) for comparison"
 	@echo "  make fuse          merge adapter into a standalone model -> fused_model/"
@@ -42,6 +44,12 @@ train:
 
 train-smoke:
 	$(PY) -m imsg_local_llm.train --smoke
+
+train-fast:
+	$(PY) -m imsg_local_llm.train --config config.fast.yaml
+
+train-fast-3b:
+	$(PY) -m imsg_local_llm.train --config config.fast.yaml --model mlx-community/Llama-3.2-3B-Instruct-4bit
 
 chat:
 	$(PY) -m imsg_local_llm.chat --my-name $(NAME)

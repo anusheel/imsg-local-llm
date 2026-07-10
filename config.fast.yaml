@@ -1,0 +1,40 @@
+# Faster LoRA settings. Use with: make train-fast
+#
+# Same 8B base and quality target as config.yaml, tuned to run in roughly a third
+# of the time on Apple silicon with spare memory:
+#   - grad_checkpoint off: you rarely need it below ~24GB; recomputing activations
+#     is pure overhead when memory is free.
+#   - batch_size 4: better GPU utilization, covers the data in fewer iters.
+#   - max_seq_length 1024: your messages are short, so this truncates almost
+#     nothing while cutting compute on the long batches.
+#   - iters 400: the validation curve flattens early; more mostly overfits.
+# If you hit a memory error, drop batch_size back to 2.
+
+my_name: Me
+
+system_prompt: >-
+  You are {my_name} texting on iMessage. Reply exactly the way {my_name} really
+  texts: same tone, length, slang, capitalization, punctuation, and emoji habits.
+  Keep it casual and in-character. Do not explain yourself.
+
+gap_minutes: 240
+max_turns: 40
+min_turns: 3
+include_groups: true
+valid_fraction: 0.05
+seed: 7
+max_examples: 0
+
+train:
+  model: mlx-community/Meta-Llama-3.1-8B-Instruct-4bit
+  data: data
+  adapter_path: adapters
+  iters: 400
+  batch_size: 4
+  num_layers: 16
+  learning_rate: 0.0001
+  max_seq_length: 1024
+  steps_per_report: 20
+  steps_per_eval: 100
+  save_every: 100
+  grad_checkpoint: false
