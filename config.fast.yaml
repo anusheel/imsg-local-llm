@@ -1,14 +1,18 @@
 # Faster LoRA settings. Use with: make train-fast
 #
-# Same 8B base and quality target as config.yaml, tuned to run in roughly a third
-# of the time on Apple silicon with spare memory:
-#   - grad_checkpoint off: you rarely need it below ~24GB; recomputing activations
-#     is pure overhead when memory is free.
-#   - batch_size 4: better GPU utilization, covers the data in fewer iters.
-#   - max_seq_length 1024: your messages are short, so this truncates almost
-#     nothing while cutting compute on the long batches.
-#   - iters 400: the validation curve flattens early; more mostly overfits.
-# If you hit a memory error, drop batch_size back to 2.
+# What actually makes training faster here, learned the hard way by profiling:
+#   - The GPU is already at ~100% utilization (compute-bound), so a BIGGER BATCH
+#     does not speed up wall-clock. It just does more work per step, and on an 8B
+#     model it also raises memory.
+#   - Turning grad_checkpoint OFF is a trap on an 8B model: it keeps every layer's
+#     activations, which blew past 36 GB of RAM into swap and thrashed. Leave it
+#     ON. It costs ~20% per step and keeps peak memory near 10 GB.
+#   - The one real lever is FEWER ITERS. The validation loss flattens after a few
+#     hundred example exposures, so 200 iters is plenty (600 mostly overfits).
+#   - max_seq_length 1024 truncates almost nothing (your messages are short).
+#
+# Net: same safe settings as config.yaml, just 200 iters instead of 600. Finishes
+# in ~20 minutes vs ~70, memory-safe, saving a checkpoint every 50 iters.
 
 my_name: Me
 
@@ -29,12 +33,12 @@ train:
   model: mlx-community/Meta-Llama-3.1-8B-Instruct-4bit
   data: data
   adapter_path: adapters
-  iters: 400
-  batch_size: 4
+  iters: 200
+  batch_size: 2
   num_layers: 16
   learning_rate: 0.0001
   max_seq_length: 1024
   steps_per_report: 20
   steps_per_eval: 100
-  save_every: 100
-  grad_checkpoint: false
+  save_every: 50
+  grad_checkpoint: true
