@@ -1,0 +1,34 @@
+# Configuration. Safe to commit; no personal data lives here.
+
+# Your first name, used in the persona prompt and the chat REPL.
+my_name: Me
+
+# Persona the model is trained and chatted with. {my_name} is substituted in.
+system_prompt: >-
+  You are {my_name} texting on iMessage. Reply exactly the way {my_name} really
+  texts: same tone, length, slang, capitalization, punctuation, and emoji habits.
+  Keep it casual and in-character. Do not explain yourself.
+
+# Data preparation (prepare.py)
+gap_minutes: 240        # start a new conversation after this much silence
+max_turns: 40           # cap turns per training example
+min_turns: 3            # skip trivially short exchanges
+include_groups: true    # include group chats (senders are name-tagged)
+valid_fraction: 0.05    # held-out validation split
+seed: 7
+max_examples: 0         # 0 means use everything
+
+# LoRA fine-tuning (train.py -> mlx_lm lora)
+train:
+  model: mlx-community/Meta-Llama-3.1-8B-Instruct-4bit
+  data: data
+  adapter_path: adapters
+  iters: 600
+  batch_size: 2
+  num_layers: 16
+  learning_rate: 0.0001
+  max_seq_length: 2048
+  steps_per_report: 20
+  steps_per_eval: 100
+  save_every: 100
+  grad_checkpoint: true

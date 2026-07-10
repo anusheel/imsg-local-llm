@@ -1,0 +1,6 @@
+# Optional contact name mapping. Copy to contacts.csv (git-ignored) and fill in.
+# Without this file, contacts are pseudonymised as "Friend 1", "Friend 2", ...
+# Format: handle,name
+# `handle` is the phone number (E.164) or email as stored in iMessage.
++15551234567,Alex
+jordan@example.com,Jordan

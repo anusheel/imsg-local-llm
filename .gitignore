@@ -1,0 +1,23 @@
+# Personal data and anything derived from it. Never commit.
+data/
+adapters/
+fused_model/
+*.jsonl
+*.db
+*.db-wal
+*.db-shm
+contacts.csv
+Modelfile
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.uv/
+.python-version
+
+# macOS / editors
+.DS_Store
+.idea/
+.vscode/
